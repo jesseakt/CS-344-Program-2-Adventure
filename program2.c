@@ -17,6 +17,9 @@ int main(void)
     int connectionArr[7][7];// Array of connections between rooms
     int startRoom;          // chosenRooms index of Start Room
     int endRoom;            // chosenRooms index of End Room
+    int currentRoom;        // chosenRooms index of Current Room
+    int stepCounter;        // Number of steps taken
+    FILE *stepHistory;      // Temp file to store all the steps taken.
     FILE *currentFile;      // Pointer to the current file
 
 
@@ -147,7 +150,6 @@ int main(void)
             }
         }
 
-
         //Write the Room Type
         if(i == startRoom){
             fprintf(currentFile, "ROOM TYPE: START_ROOM\n");
@@ -162,10 +164,94 @@ int main(void)
 
         //Close the file
         fclose(currentFile);
-
-
     }
 
+    //Begin Prompt for Game
+    system("clear");
+    printf("***** Mall Munchies *****\n\n");
+    printf("You find yourself in a mall when you are blindsided \nwith an intense bout of hunger.\n\nThis isn't like anything you've felt before... \nand you're not quite sure what you want to eat!\n\nBetter head down to the food court!\n\n*************************\n\n");
+
+    //Set Current Room to Start Room
+    currentRoom = startRoom;
+    //Open Step History File in Read/Write Mode
+    stepHistory = fopen("tempStep", "w+");
+
+    //Loop until the Person reaches the end room
+    //while(currentRoom != endRoom)
+    //{
+        //Open File
+        currentFile = fopen(fileNames[currentRoom], "r");
+
+        //Get and Display Current Room
+        char nextLine[50];
+        fgets(nextLine, sizeof(nextLine), currentFile);
+        printf("CURRENT LOCATION: ");
+        for(i=11; i < strlen(nextLine); i++)
+        {
+            printf("%c", nextLine[i]);
+        }
+        
+        //Get and Display Connections
+        printf("POSSIBLE CONNECTIONS: ");
+        fgets(nextLine, 50, currentFile);
+        do{
+            //Prints the next connection
+            for(i=14; i < strlen(nextLine); i++)
+            {
+                if(nextLine[i] != 10) //Don't print line returns.
+                    printf("%c", nextLine[i]);
+            }
+            fgets(nextLine, 50, currentFile);
+            if(nextLine[0]==67) //Begins with Capital C
+                printf(", ");
+            else
+                printf(".\n");
+        }while(nextLine[0]==67); //Begins with Capital C
+
+        //Get Next Room
+
+        //Close File
+        fclose(currentFile);
+
+    //}
+    
+    //User found end: congrats, step counter, step history
+
+    
+    //History File Close and Deleted.
+    fclose(stepHistory);
+    remove("tempStep");
+
+    //Return Successfully
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
