@@ -12,7 +12,7 @@ int main(void)
     int pid;                // Process ID
     char filepath[80];      // Filepath for room directory
     char fileNames[6][7];   // Array of filenames for rooms in directory
-    char *roomNames[10];    // Array of possible room names
+    char roomNames[10][50];    // Array of possible room names
     int chosenRooms[7];     // Array of actually selected room choices
     int connectionArr[7][7];// Array of connections between rooms
     int startRoom;          // chosenRooms index of Start Room
@@ -32,16 +32,16 @@ int main(void)
     chdir(filepath);
 
     //Create list of room names
-    roomNames[0] = "Popcorn Stadium";
-    roomNames[1] = "Waffle Emporium";
-    roomNames[2] = "House of Pancakes";
-    roomNames[3] = "Sandwich Place";
-    roomNames[4] = "Candy Court";
-    roomNames[5] = "Soda Springs";
-    roomNames[6] = "Chocolate Canyon";
-    roomNames[7] = "Pizza Planet";
-    roomNames[8] = "Fruity Fountain";
-    roomNames[9] = "Delicious Deli";
+    strcpy(roomNames[0], "Popcorn Stadium");
+    strcpy(roomNames[1], "Waffle Emporium");
+    strcpy(roomNames[2], "House of Pancakes");
+    strcpy(roomNames[3], "Sandwich Place");
+    strcpy(roomNames[4], "Candy Court");
+    strcpy(roomNames[5], "Soda Springs");
+    strcpy(roomNames[6], "Chocolate Canyon");
+    strcpy(roomNames[7], "Pizza Planet");
+    strcpy(roomNames[8], "Fruity Fountain");
+    strcpy(roomNames[9], "Delicious Deli");
 
     /* Randomly select 7 rooms.
      * Chooses 7 unique integers in the range [0,9] */
@@ -175,10 +175,15 @@ int main(void)
     currentRoom = startRoom;
     //Open Step History File in Read/Write Mode
     stepHistory = fopen("tempStep", "w+");
+    //Initialize the step counter
+    stepCounter = 0;
 
     //Loop until the Person reaches the end room
-    //while(currentRoom != endRoom)
-    //{
+    while(currentRoom != endRoom)
+    {
+        //Didn't find the room you want message
+        printf("Man... this place looks good, but it's not quite what you're looking for... \n\n");
+
         //Open File
         currentFile = fopen(fileNames[currentRoom], "r");
 
@@ -209,15 +214,64 @@ int main(void)
         }while(nextLine[0]==67); //Begins with Capital C
 
         //Get Next Room
+        char userLoc[50];
+        do{
+            printf("WHERE TO?>");
+            fgets(userLoc, 50, stdin);
+        }while(userLoc[0] ==10);//Keep prompting for an entry if empty.
+        //Remove NewLine Character from userLoc (came from fgets)
+        userLoc[strcspn(userLoc, "\n")] = '\0';
+        //Validate that this place is on the connections list
+        int found = 0;
+        for(i = 0; i < 7; i++)
+        {
+            //Only consider rooms where the connection exists.
+            if(connectionArr[currentRoom][i] !=0 && currentRoom != i)
+            {
+                //Compare the name of the room to the user's name
+                if(strcmp(roomNames[chosenRooms[i]], userLoc) == 0)
+                {
+                    //Set that we found it.
+                    found = 1;
+                    //Increase the step counter.
+                    stepCounter++;
+                    //Append the chosen room to the stepHistory doc
+                    fprintf(stepHistory, "%s\n", roomNames[chosenRooms[i]]);
+                    //Change the current room index to the user's room
+                    currentRoom = i;
+                    //Break the for loop
+                    break;
+                }
+            }
+        }
+
+        //If we didn't find it, print the error message and loop through the while loop again
+        if(found == 0)
+        {
+            printf("\nHUH? I DON'T UNDERSTAND THAT ROOM. TRY AGAIN.");
+        }
+
+        //Divider Line
+        printf("\n*************************\n\n");
 
         //Close File
         fclose(currentFile);
-
-    //}
+    }
     
     //User found end: congrats, step counter, step history
+    printf("AHH! This place really hit the spot!\n");
+    printf("You took %d steps to satiate your hunger!\n", stepCounter);
+    printf("Your path to victory was: \n");
+    //Display step history from temp file
+    rewind(stepHistory);
+    //Copy a text file to the screen
+    //Researched at stackoverflow.com/questions/3463426
+    int c;
+    while((c = getc(stepHistory)) != EOF)
+        putchar(c);
 
-    
+    printf("\n");
+
     //History File Close and Deleted.
     fclose(stepHistory);
     remove("tempStep");
@@ -225,33 +279,3 @@ int main(void)
     //Return Successfully
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
